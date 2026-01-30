@@ -1,6 +1,6 @@
 <?php
 // 1. Подключаем настройки БД (создан на прошлом занятии 14.01)
-require 'db.php'; 
+require '../db.php'; 
 
 $errorMsg = '';
 $successMsg = '';

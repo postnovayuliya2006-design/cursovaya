@@ -1,6 +1,6 @@
 <?php
 session_start();
-require 'db.php';
+require '../db.php';
 
 // 1. Получаем все товары из базы
 // ORDER BY id DESC означает "сначала новые"
