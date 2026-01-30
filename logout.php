@@ -2,10 +2,10 @@
 session_start();
 require '../db.php';
 
-// 1. Получаем все товары из базы
+// 1. Получаем всех кандидатов из базы
 // ORDER BY id DESC означает "сначала новые"
-$stmt = $pdo->query("SELECT * FROM products ORDER BY id DESC");
-$products = $stmt->fetchAll();
+$stmt = $pdo->query("SELECT * FROM candidates ORDER BY id DESC");
+$candidates = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -19,7 +19,7 @@ $products = $stmt->fetchAll();
 
 <!-- Навигация -->
 <nav class="navbar navbar-light bg-light px-4 mb-4 shadow-sm">
-    <span class="navbar-brand mb-0 h1">Мой Магазин</span>
+    <span class="navbar-brand mb-0 h1">Кадровое Агентство</span>
     <div>
         <?php if (isset($_SESSION['user_id'])): ?>
             <!-- Если вошел -->
@@ -37,30 +37,30 @@ $products = $stmt->fetchAll();
 </nav>
 
 <div class="container">
-    <h2 class="mb-4">Каталог товаров</h2>
+    <h2 class="mb-4">База кандидатов</h2>
     
     <div class="row">
-        <?php foreach ($products as $product): ?>
+        <?php foreach ($candidates as $candidate): ?>
             <div class="col-md-4 mb-4">
                 <div class="card h-100">
-                    <!-- Если картинки нет, ставим заглушку -->
-                    <?php $img = $product['image_url'] ?: 'https://via.placeholder.com/300'; ?>
+                    <!-- Если фотографии нет, ставим заглушку -->
+                    <?php $img = $candidate['photo_url'] ?: 'https://via.placeholder.com/300'; ?>
                     <img src="<?= htmlspecialchars($img) ?>" class="card-img-top" alt="Фото" style="height: 200px; object-fit: cover;">
                     
                     <div class="card-body">
-                        <h5 class="card-title"><?= htmlspecialchars($product['title']) ?></h5>
-                        <p class="card-text text-truncate"><?= htmlspecialchars($product['description']) ?></p>
-                        <p class="card-text fw-bold text-primary"><?= $product['price'] ?> ₽</p>
+                        <h5 class="card-title"><?= htmlspecialchars($candidate['full_name']) ?></h5>
+                        <p class="card-text text-truncate"><?= htmlspecialchars($candidate['resume']) ?></p>
+                        <p class="card-text fw-bold text-primary"><?= $candidate['expected_salary'] ?> ₽</p>
                     </div>
                     <div class="card-footer bg-white border-top-0">
-                        <a href="#" class="btn btn-primary w-100">Купить</a>
+                        <a href="#" class="btn btn-primary w-100">Подробнее</a>
                     </div>
                 </div>
             </div>
         <?php endforeach; ?>
         
-        <?php if (count($products) === 0): ?>
-            <p class="text-muted">Товаров пока нет. Зайдите под админом и добавьте их.</p>
+        <?php if (count($candidates) === 0): ?>
+            <p class="text-muted">Кандидатов пока нет. Зайдите под админом и добавьте их.</p>
         <?php endif; ?>
     </div>
 </div>
