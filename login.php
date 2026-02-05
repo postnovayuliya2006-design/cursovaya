@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </form>
 
                     <div class="mt-3 text-center">
-                        <a href="register.php">Нет аккаунта? Зарегистрироваться</a>
+                        Нет аккаунта? <a href="register.php">Зарегистрироваться</a>
                     </div>
 
                 </div>
@@ -87,6 +87,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </div>
-
-</body>
-</html>

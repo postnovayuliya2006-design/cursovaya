@@ -2,9 +2,18 @@
 session_start();
 require '../db.php';
 
-// 1. Получаем всех кандидатов из базы
-// ORDER BY id DESC означает "сначала новые"
-$stmt = $pdo->query("SELECT * FROM candidates ORDER BY id DESC");
+$q = $_GET['q'] ?? '';
+
+if ($q) {
+    // Поиск с LIKE, подготавливаем запрос
+    $stmt = $pdo->prepare("SELECT * FROM candidates WHERE position LIKE ? OR full_name LIKE ? ORDER BY id DESC");
+    $search = "%$q%";
+    $stmt->execute([$search, $search]);
+} else {
+    // Без поиска
+    $stmt = $pdo->query("SELECT * FROM candidates ORDER BY id DESC");
+}
+
 $candidates = $stmt->fetchAll();
 ?>
 
@@ -39,6 +48,22 @@ $candidates = $stmt->fetchAll();
 
 <div class="container">
     <h2 class="mb-4">База кандидатов</h2>
+    <!-- Поиск по должности -->
+<div class="card mb-4 p-3 bg-light">
+    <form method="GET" action="index.php" class="row g-3">
+        <div class="col-md-8">
+            <input type="text"
+                   name="q"
+                   class="form-control"
+                   placeholder="Поиск по должности..."
+                   value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-primary w-100">Найти</button>
+        </div>
+    </form>
+</div>
+
     
     <div class="row">
         <?php foreach ($candidates as $candidate): ?>
@@ -49,11 +74,27 @@ $candidates = $stmt->fetchAll();
                     <img src="<?= htmlspecialchars($photo) ?>" class="card-img-top" alt="Фото кандидата" style="height: 200px; object-fit: cover;">
                     
                     <div class="card-body">
-                        <h5 class="card-title"><?= h($candidate['full_name']) ?></h5>
-                        <p class="card-text"><?= h($candidate['resume']) ?></p>
-                        <p class="card-text fw-bold text-primary"><?= $candidate['expected_salary'] ?> ₽</p>
-                        <p class="card-text text-muted small">Добавлен: <?= date('d.m.Y', strtotime($candidate['created_at'])) ?></p>
-                    </div>
+    <h5 class="card-title"><?= h($candidate['full_name']) ?></h5>
+
+    <!-- Должность кандидата -->
+    <p class="card-text text-muted fw-semibold">
+        <?= h($candidate['position']) ?>
+    </p>
+
+    <!-- Резюме (PDF путь или описание) -->
+    <p class="card-text">
+        <?= h($candidate['resume']) ?>
+    </p>
+
+    <p class="card-text fw-bold text-primary">
+        <?= number_format($candidate['expected_salary'], 2) ?> ₽
+    </p>
+
+    <p class="card-text text-muted small">
+        Добавлен: <?= date('d.m.Y', strtotime($candidate['created_at'])) ?>
+    </p>
+</div>
+
                     <div class="card-footer bg-white border-top-0">
                         <div class="card-footer bg-white border-top-0">
     <?php if (isset($_SESSION['user_id']) && $_SESSION['user_role'] === 'client'): ?>

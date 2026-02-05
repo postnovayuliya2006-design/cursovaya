@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <button type="submit" class="btn btn-primary w-100">Зарегистрироваться</button>
                         </form>
                         <div class="mt-3 text-center">
-                            <a href="login.php">Уже есть аккаунт? Войти</a>
+                            Уже есть аккаунт? <a href="login.php">Войти</a>
                         </div>
     
                         <?php endif; ?>

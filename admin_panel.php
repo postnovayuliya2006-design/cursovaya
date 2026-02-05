@@ -18,9 +18,9 @@ require 'check_admin.php';
             <p>Кадровое агентство - управление базой кандидатов</p>
         </div>
         
-        <a href="index.php" class="btn btn-danger">Выйти</a>
+        <a href="logout.php" class="btn btn-danger">Выйти</a>
         <a href="add_item.php" class="btn btn-success btn-sm">+ Добавить нового кандидата</a>
-        <a href="index.php" class="btn btn-primary mt-2">Просмотр базы</a>
+        <a href="profile.php" class="btn btn-primary mt-2">Просмотр базы</a>
     </div>
 </body>
 </html>

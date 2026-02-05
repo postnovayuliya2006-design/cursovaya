@@ -103,9 +103,17 @@ $my_applications = $stmt->fetchAll();
                                                     Заявка оставлена: <?= date('d.m.Y H:i', strtotime($application['created_at'])) ?>
                                                 </p>
                                             </div>
-                                            <div class="card-footer bg-white">
-                                                <a href="#" class="btn btn-outline-primary w-100">Подробнее о кандидате</a>
-                                            </div>
+                                            <div class="card-footer bg-white d-flex gap-2">
+    <!-- Кнопка "Подробнее о кандидате" -->
+    <a href="#" class="btn btn-outline-primary w-50">Подробнее о кандидате</a>
+
+    <!-- Новая кнопка "Редактировать" -->
+<a href="edit_candidate.php?id=<?= $application['candidate_id'] ?>" class="btn btn-warning w-50">
+    ✏️ Редактировать
+</a>
+
+</div>
+
                                         </div>
                                     </div>
                                 <?php endforeach; ?>

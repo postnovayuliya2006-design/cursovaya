@@ -22,15 +22,29 @@ if ($candidate_id > 0) {
         die("Ошибка: Попытка оставить заявку на несуществующего кандидата! Ваш IP записан.");
     }
 
-    // 3. Создаем заявку (только после проверки)
-    $stmt = $pdo->prepare("INSERT INTO applications (employer_id, candidate_id) VALUES (?, ?)");
+    // ПРОВЕРКА НА ПОВТОРНУЮ ЗАЯВКУ
+    $check2 = $pdo->prepare("
+        SELECT id FROM applications 
+        WHERE employer_id = ? AND candidate_id = ?
+    ");
+    $check2->execute([$employer_id, $candidate_id]);
+
+    if ($check2->rowCount()) {
+        die("Вы уже оставляли заявку на этого кандидата.");
+    }
+
+    // 3. Создаем заявку (только после всех проверок)
+    $stmt = $pdo->prepare(
+        "INSERT INTO applications (employer_id, candidate_id) VALUES (?, ?)"
+    );
     try {
         $stmt->execute([$employer_id, $candidate_id]);
         echo "Заявка успешно оформлена! Менеджер свяжется с вами. <a href='index.php'>Вернуться</a>";
     } catch (PDOException $e) {
         echo "Ошибка: " . $e->getMessage();
     }
-} else {
+}
+else {
     echo "Неверный кандидат.";
 }
 ?>
