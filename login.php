@@ -73,10 +73,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <input type="password" name="password" class="form-control" required>
                         </div>
 
+
                         <button type="submit" class="btn btn-success w-100">
                             Войти
                         </button>
                     </form>
+                    <div class="mt-2 text-end">
+    <a href="change_password.php">Забыли пароль?</a>
+</div>
+
 
                     <div class="mt-3 text-center">
                         Нет аккаунта? <a href="register.php">Зарегистрироваться</a>

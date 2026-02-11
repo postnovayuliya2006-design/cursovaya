@@ -17,12 +17,13 @@ $user_id = $_SESSION['user_id'];
 $sql = "
     SELECT 
         applications.id as application_id, 
+        applications.candidate_id,
         applications.created_at, 
         applications.status, 
         candidates.full_name, 
         candidates.expected_salary,
         candidates.photo_url,
-        candidates.resume
+        candidates.resume_pdf
     FROM applications 
     JOIN candidates ON applications.candidate_id = candidates.id 
     WHERE applications.employer_id = ? 
@@ -81,13 +82,19 @@ $my_applications = $stmt->fetchAll();
                                             
                                             <div class="card-body">
                                                 <h5 class="card-title"><?= htmlspecialchars($application['full_name']) ?></h5>
-                                                <p class="card-text"><?= htmlspecialchars(mb_substr($application['resume'], 0, 150)) ?>...</p>
+                                                
+                                                <!-- Ссылка на PDF резюме -->
+                                                <p class="card-text">
+                                                    <a href="<?= htmlspecialchars($application['resume_pdf']) ?>" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                                        📄 Скачать резюме
+                                                    </a>
+                                                </p>
+                                                
                                                 <p class="card-text fw-bold text-primary"><?= number_format($application['expected_salary'], 0, ',', ' ') ?> ₽</p>
                                                 
                                                 <!-- Статус с цветным бейджиком -->
                                                 <div class="mb-3">
                                                     <?php 
-                                                    // Логика цвета для статуса
                                                     $status_color = 'secondary';
                                                     if ($application['status'] == 'new') $status_color = 'primary';
                                                     if ($application['status'] == 'processing') $status_color = 'warning';
@@ -107,13 +114,19 @@ $my_applications = $stmt->fetchAll();
     <!-- Кнопка "Подробнее о кандидате" -->
     <a href="#" class="btn btn-outline-primary w-50">Подробнее о кандидате</a>
 
-    <!-- Новая кнопка "Редактировать" -->
-<a href="edit_candidate.php?id=<?= $application['candidate_id'] ?>" class="btn btn-warning w-50">
-    ✏️ Редактировать
-</a>
+    <!-- Кнопка редактирования -->
+    <a href="edit_candidate.php?id=<?= $application['candidate_id'] ?>" 
+       class="btn btn-warning w-50">
+        ✏️ Редактировать
+    </a>
 
+    <!-- Кнопка удаления -->
+    <form action="delete_candidate.php" method="POST" class="w-50" onsubmit="return confirm('Вы уверены, что хотите удалить этого кандидата?');">
+        <input type="hidden" name="id" value="<?= $application['candidate_id'] ?>">
+        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+        <button type="submit" class="btn btn-danger w-100">🗑️ Удалить</button>
+    </form>
 </div>
-
                                         </div>
                                     </div>
                                 <?php endforeach; ?>

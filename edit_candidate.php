@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body class="p-4">
 <div class="container">
     <h1>Редактирование кандидата</h1>
-    <a href="index.php" class="btn btn-secondary mb-3">← На главную</a>
+    <a href="profile.php" class="btn btn-secondary mb-3">← Назад</a>
 
     <?= $message ?>
 

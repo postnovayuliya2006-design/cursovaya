@@ -21,6 +21,10 @@ require 'check_admin.php';
         <a href="logout.php" class="btn btn-danger">Выйти</a>
         <a href="add_item.php" class="btn btn-success btn-sm">+ Добавить нового кандидата</a>
         <a href="profile.php" class="btn btn-primary mt-2">Просмотр базы</a>
+        <form action="delete_candidate.php" method="POST" onsubmit="return confirm('Вы уверены, что хотите удалить кандидата?');">
+
+</form>
+
     </div>
 </body>
 </html>
