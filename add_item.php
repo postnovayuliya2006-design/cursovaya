@@ -1,133 +1,144 @@
-<?php
+<?php 
 session_start();
 require '../db.php';
-require 'check_admin.php'; // только админ может добавлять кандидатов
+require 'check_admin.php';
+
+// 🔥 ВКЛЮЧАЕМ ОШИБКИ (чтобы больше не было белого экрана)
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 $message = '';
-$error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $full_name = trim($_POST['full_name']);
     $position = trim($_POST['position']);
-    $expected_salary = trim($_POST['expected_salary']);
-    $photo_url = trim($_POST['photo_url']);
+    $expected_salary = $_POST['expected_salary'];
 
-    if (empty($full_name) || empty($position) || empty($expected_salary)) {
-        $error = "Заполните все обязательные поля.";
-    } else {
+    $photo_path = null;
+    $resume_path = null;
 
-        // ===== ОБРАБОТКА PDF =====
-        if (!isset($_FILES['resume_pdf']) || $_FILES['resume_pdf']['error'] !== 0) {
-            $error = "Загрузите PDF-файл.";
+    // ================= PHOTO =================
+    if (!empty($_FILES['photo']['name'])) {
+
+        $uploadDir = 'uploads/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+
+        $ext = strtolower(pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION));
+        $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+
+        if (!in_array($ext, $allowed)) {
+            $message = "❌ Фото должно быть JPG, PNG или GIF";
         } else {
 
-            $tmpName = $_FILES['resume_pdf']['tmp_name'];
-            $fileName = $_FILES['resume_pdf']['name'];
-            $fileSize = $_FILES['resume_pdf']['size'];
+            $fileName = uniqid('photo_') . '.' . $ext;
+            $fullPath = $uploadDir . $fileName;
 
-            // Проверка MIME-типа
-            $fileType = mime_content_type($tmpName);
-            if ($fileType !== 'application/pdf') {
-                $error = "Разрешены только PDF-файлы.";
-            }
-
-            // Проверка размера (макс 5MB)
-            if ($fileSize > 5 * 1024 * 1024) {
-                $error = "Файл слишком большой (макс 5MB).";
-            }
-
-            if (empty($error)) {
-
-                $uploadDir = '../uploads/';
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0777, true);
-                }
-
-                $newFileName = time() . '_' . preg_replace("/[^a-zA-Z0-9\.]/", "_", $fileName);
-                $destination = $uploadDir . $newFileName;
-
-                if (move_uploaded_file($tmpName, $destination)) {
-
-                    $dbPath = 'uploads/' . $newFileName;
-
-                    $stmt = $pdo->prepare("
-                        INSERT INTO candidates
-                        (full_name, position, expected_salary, photo_url, resume_pdf)
-                        VALUES (?, ?, ?, ?, ?)
-                    ");
-
-                    $stmt->execute([
-                        $full_name,
-                        $position,
-                        $expected_salary,
-                        $photo_url,
-                        $dbPath
-                    ]);
-
-                    $message = "Кандидат успешно добавлен!";
-                } else {
-                    $error = "Ошибка сохранения файла.";
-                }
+            if (move_uploaded_file($_FILES['photo']['tmp_name'], $fullPath)) {
+                $photo_path = $fullPath;
+            } else {
+                $message = "❌ Ошибка загрузки фото";
             }
         }
+    }
+
+    // ================= RESUME =================
+    if (!empty($_FILES['resume']['name'])) {
+
+        $uploadDir = 'uploads/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+
+        $ext = strtolower(pathinfo($_FILES['resume']['name'], PATHINFO_EXTENSION));
+
+        if ($ext !== 'pdf') {
+            $message = "❌ Резюме должно быть PDF";
+        } else {
+
+            $fileName = uniqid('resume_') . '.pdf';
+            $fullPath = $uploadDir . $fileName;
+
+            if (move_uploaded_file($_FILES['resume']['tmp_name'], $fullPath)) {
+                $resume_path = $fullPath;
+            } else {
+                $message = "❌ Ошибка загрузки резюме";
+            }
+        }
+    }
+
+    // ================= DB =================
+    if ($photo_path && $resume_path && !$message) {
+
+        $stmt = $pdo->prepare("
+            INSERT INTO candidates 
+            (full_name, position, expected_salary, photo_url, resume_pdf)
+            VALUES (?, ?, ?, ?, ?)
+        ");
+
+        $stmt->execute([
+            $full_name,
+            $position,
+            $expected_salary,
+            $photo_path,
+            $resume_path
+        ]);
+
+        $message = "✅ Кандидат успешно добавлен!";
     }
 }
 ?>
 
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
     <title>Добавить кандидата</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="bg-light">
+<body class="p-4">
 
-<div class="container mt-5">
-    <div class="card shadow p-4">
-        <h2 class="mb-4">Добавить кандидата</h2>
+<div class="container">
 
-        <?php if ($message): ?>
-            <div class="alert alert-success"><?= htmlspecialchars($message) ?></div>
-        <?php endif; ?>
+    <a href="profile.php" class="btn btn-secondary mb-3">← Назад</a>
 
-        <?php if ($error): ?>
-            <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
-        <?php endif; ?>
+    <h2>Добавить кандидата</h2>
 
-        <form method="POST" enctype="multipart/form-data">
+    <?php if ($message): ?>
+        <div class="alert alert-info">
+            <?= htmlspecialchars($message) ?>
+        </div>
+    <?php endif; ?>
 
-            <div class="mb-3">
-                <label class="form-label">ФИО кандидата *</label>
-                <input type="text" name="full_name" class="form-control" required>
-            </div>
+    <form method="POST" enctype="multipart/form-data" class="card p-4">
 
-            <div class="mb-3">
-                <label class="form-label">Должность *</label>
-                <input type="text" name="position" class="form-control" required>
-            </div>
+        <div class="mb-3">
+            <label>ФИО</label>
+            <input type="text" name="full_name" class="form-control" required>
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label">Ожидаемая зарплата *</label>
-                <input type="number" name="expected_salary" step="0.01" class="form-control" required>
-            </div>
+        <div class="mb-3">
+            <label>Должность</label>
+            <input type="text" name="position" class="form-control" required>
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label">Ссылка на фото (URL)</label>
-                <input type="text" name="photo_url" class="form-control">
-            </div>
+        <div class="mb-3">
+            <label>Ожидаемая зарплата</label>
+            <input type="number" name="expected_salary" class="form-control" required>
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label">PDF резюме *</label>
-                <input type="file" name="resume_pdf" accept="application/pdf" class="form-control" required>
-            </div>
+        <div class="mb-3">
+            <label>Фото</label>
+            <input type="file" name="photo" class="form-control" required>
+        </div>
 
-            <button type="submit" class="btn btn-primary">Добавить</button>
-            <a href="index.php" class="btn btn-secondary">Назад</a>
+        <div class="mb-3">
+            <label>Резюме (PDF)</label>
+            <input type="file" name="resume" class="form-control" required>
+        </div>
 
-        </form>
-    </div>
+        <button class="btn btn-success">Добавить</button>
+
+    </form>
 </div>
 
 </body>

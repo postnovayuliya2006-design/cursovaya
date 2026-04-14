@@ -1,5 +1,5 @@
 <?php
 // hash_gen.php
-$password = 'admin321';
+$password = 'user123';
 echo password_hash($password, PASSWORD_DEFAULT);
 ?>

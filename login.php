@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </button>
                     </form>
                     <div class="mt-2 text-end">
-    <a href="change_password.php">Забыли пароль?</a>
+    <a href="forgot_password.php">Забыли пароль?</a>
 </div>
 
 

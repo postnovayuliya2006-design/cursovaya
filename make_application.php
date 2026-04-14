@@ -2,49 +2,24 @@
 session_start();
 require '../db.php';
 
-// 1. Проверка: Вошел ли пользователь?
 if (!isset($_SESSION['user_id'])) {
-    die("Сначала войдите в систему! <a href='login.php'>Вход</a>");
+    die("Нет доступа");
 }
 
-// 2. Получаем ID кандидата из ссылки (например, make_application.php?id=5)
-// (int) — это защита от хакеров, превращаем ВСЁ в число. "text" станет 0.
-$candidate_id = (int)$_GET['id'];
-$employer_id = $_SESSION['user_id'];
+$user_id = $_SESSION['user_id'];
+$candidate_id = (int)($_POST['candidate_id'] ?? 0);
 
-if ($candidate_id > 0) {
-    // ПРОВЕРКА БЕЗОПАСНОСТИ №2: А существует ли такой кандидат?
-    $check = $pdo->prepare("SELECT id FROM candidates WHERE id = ?");
-    $check->execute([$candidate_id]);
-    $exists = $check->fetch();
+// Проверка на дубликат
+$stmt = $pdo->prepare("SELECT id FROM applications WHERE user_id = ? AND candidate_id = ?");
+$stmt->execute([$user_id, $candidate_id]);
 
-    if (!$exists) {
-        die("Ошибка: Попытка оставить заявку на несуществующего кандидата! Ваш IP записан.");
-    }
-
-    // ПРОВЕРКА НА ПОВТОРНУЮ ЗАЯВКУ
-    $check2 = $pdo->prepare("
-        SELECT id FROM applications 
-        WHERE employer_id = ? AND candidate_id = ?
-    ");
-    $check2->execute([$employer_id, $candidate_id]);
-
-    if ($check2->rowCount()) {
-        die("Вы уже оставляли заявку на этого кандидата.");
-    }
-
-    // 3. Создаем заявку (только после всех проверок)
-    $stmt = $pdo->prepare(
-        "INSERT INTO applications (employer_id, candidate_id) VALUES (?, ?)"
-    );
-    try {
-        $stmt->execute([$employer_id, $candidate_id]);
-        echo "Заявка успешно оформлена! Менеджер свяжется с вами. <a href='index.php'>Вернуться</a>";
-    } catch (PDOException $e) {
-        echo "Ошибка: " . $e->getMessage();
-    }
+if ($stmt->rowCount()) {
+    header("Location: index.php");
+    exit;
 }
-else {
-    echo "Неверный кандидат.";
-}
-?>
+
+// Добавление
+$stmt = $pdo->prepare("INSERT INTO applications (user_id, candidate_id) VALUES (?, ?)");
+$stmt->execute([$user_id, $candidate_id]);
+
+header("Location: index.php");
