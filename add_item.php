@@ -1,7 +1,7 @@
 <?php 
 session_start();
-require '../db.php';
-require 'check_admin.php';
+require_once '../db.php';
+require_once 'check_admin.php';
 
 // 🔥 ВКЛЮЧАЕМ ОШИБКИ (чтобы больше не было белого экрана)
 ini_set('display_errors', 1);
